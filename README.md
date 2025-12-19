@@ -13,6 +13,9 @@
 - [시스템 아키텍처](#9-시스템-아키텍처)
 - [향후 확장 계획](#10-향후-확장-계획)
 - [TDD 개발 프로세스](#11-tdd-개발-프로세스)
+  - [RED 단계](#-red-단계---해야-할-일)
+  - [GREEN 단계](#-green-단계---해야-할-일)
+  - [REFACTOR 단계](#-refactor-단계-최종-단계)
 
 ---
 
@@ -333,11 +336,210 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
 
 ---
 
-### 🟢 GREEN 단계 (다음 단계)
+### 🟢 GREEN 단계 - 해야 할 일
 
-RED 단계 완료 후, GREEN 단계에서는:
-- 테스트를 통과시키는 **최소한의 코드**만 작성
-- 복잡한 로직이나 최적화는 REFACTOR 단계에서 수행
+GREEN 단계에서는 **테스트를 통과시키는 최소한의 코드**를 작성합니다. 복잡한 로직이나 최적화는 REFACTOR 단계에서 수행합니다.
+
+#### 1. MenuService 구현
+
+**목표:** 테스트를 통과시키는 MenuService 구현체 작성
+
+**파일:** `lib/services/menu_service_impl.dart` (생성 필요)
+
+**구현 항목:**
+
+- [ ] **MenuServiceImpl 클래스 생성**
+  ```dart
+  class MenuServiceImpl implements MenuService {
+    // MenuService 인터페이스 구현
+  }
+  ```
+
+- [ ] **getAvailableMenus() 메서드 구현**
+  - 품절 메뉴 필터링 로직 포함
+  - `isAvailable == true`인 메뉴만 반환
+  - Mock 데이터 또는 API 연동
+  - **예상 커버리지:** +50%
+
+- [ ] **getMenuById(String id) 메서드 구현**
+  - ID로 메뉴 검색
+  - 존재하지 않는 ID에 대한 null 반환 처리
+  - **예상 커버리지:** +25%
+
+**테스트 통과 목표:**
+- ✅ `menu_service_test.dart` - 메뉴 조회 테스트 통과
+- ✅ `menu_detail_test.dart` - 메뉴 상세 정보 테스트 통과
+- ✅ `out_of_stock_test.dart` - 품절 메뉴 처리 테스트 통과
+
+---
+
+#### 2. UI 위젯 구현
+
+**목표:** 테스트를 통과시키는 최소한의 UI 위젯 구현
+
+##### 2.1 MenuListScreen 구현
+
+**파일:** `lib/screens/menu_list_screen.dart` (생성 필요)
+
+**구현 항목:**
+
+- [ ] **MenuListScreen 위젯 생성**
+  ```dart
+  class MenuListScreen extends StatelessWidget {
+    // 메뉴 목록 화면 구현
+  }
+  ```
+
+- [ ] **메뉴 목록 표시 기능**
+  - `ListView` 위젯 구현
+  - '메뉴 목록' 텍스트 표시
+  - MenuService와 연동하여 메뉴 데이터 로드
+
+- [ ] **화면 로드 처리**
+  - `pumpAndSettle()` 테스트 통과
+  - 정상적인 화면 렌더링
+
+- [ ] **예상 커버리지:** +10%
+
+**테스트 통과 목표:**
+- ✅ `menu_list_screen_test.dart` - 메뉴 목록 화면 테스트 통과
+
+---
+
+##### 2.2 MenuDetailScreen 구현
+
+**파일:** `lib/screens/menu_detail_screen.dart` (생성 필요)
+
+**구현 항목:**
+
+- [ ] **MenuDetailScreen 위젯 생성**
+  ```dart
+  class MenuDetailScreen extends StatelessWidget {
+    final String menuId;
+    // 메뉴 상세 화면 구현
+  }
+  ```
+
+- [ ] **메뉴 이미지 표시**
+  - `Image` 위젯 구현
+  - 이미지 URL 표시
+
+- [ ] **메뉴 정보 표시**
+  - 가격 텍스트 표시 (원 단위) - `find.textContaining('원')`
+  - 설명 텍스트 표시 - `find.byType(Text)`
+  - 알레르기 정보 텍스트 표시 - `find.text('알레르기 정보')`
+
+- [ ] **MenuService 연동**
+  - `getMenuById()` 메서드 호출
+  - 메뉴 데이터 로드 및 표시
+
+- [ ] **예상 커버리지:** +10%
+
+**테스트 통과 목표:**
+- ✅ `menu_detail_screen_test.dart` - 메뉴 상세 화면 테스트 통과
+
+---
+
+#### 3. 상태 관리 설정 (선택사항)
+
+**목표:** 메뉴 데이터 상태 관리
+
+**구현 항목:**
+
+- [ ] **Riverpod 또는 Provider 설정**
+  - 상태 관리 라이브러리 초기화
+  - 메뉴 데이터 상태 관리
+
+- [ ] **상태 변경 감지**
+  - UI 업데이트 자동 반영
+  - 실시간 데이터 동기화
+
+---
+
+#### 4. 테스트 실행 및 통과 확인
+
+- [ ] **모든 테스트 실행**
+  ```bash
+  cd mobile_app
+  flutter test
+  ```
+
+- [ ] **테스트 통과 확인**
+  - 5개 테스트 모두 통과 확인
+  - 실패한 테스트가 없는지 확인
+
+- [ ] **커버리지 측정**
+  ```bash
+  flutter test --coverage
+  ```
+  - 목표 커버리지: 95%+ (구현된 코드 기준)
+
+---
+
+#### 5. GREEN 단계 체크리스트
+
+**구현 항목:**
+- [ ] `MenuServiceImpl` 클래스 생성 및 구현
+- [ ] `getAvailableMenus()` 메서드 구현 (품절 필터링 포함)
+- [ ] `getMenuById(String id)` 메서드 구현
+- [ ] `MenuListScreen` 위젯 구현
+- [ ] `MenuDetailScreen` 위젯 구현
+- [ ] 상태 관리 설정 (선택사항)
+
+**테스트 통과:**
+- [ ] Unit Tests 3개 모두 통과
+- [ ] Widget Tests 2개 모두 통과
+- [ ] 총 5개 테스트 모두 통과
+
+**커버리지 목표:**
+- [ ] 전체 커버리지 95%+ 달성
+- [ ] Services 커버리지 90%+ 달성
+- [ ] Screens 커버리지 70%+ 달성
+
+---
+
+#### 6. GREEN 단계의 목표
+
+✅ **모든 테스트를 통과시키는 최소한의 코드 작성**  
+✅ **테스트 커버리지 95%+ 달성**  
+✅ **PRD 요구사항 충족**  
+✅ **리팩토링을 위한 안전한 기반 마련**
+
+---
+
+#### 7. 예상 커버리지 향상
+
+| 구현 항목 | 예상 커버리지 증가 | 누적 커버리지 |
+|----------|------------------|--------------|
+| MenuService 구현 | +75% | 75% |
+| MenuListScreen 구현 | +10% | 85% |
+| MenuDetailScreen 구현 | +10% | 95% |
+| **최종 목표** | **95%+** | **95%+** |
+
+---
+
+#### 8. 커버리지 측정 방법
+
+**커버리지 포함 테스트 실행:**
+```bash
+cd mobile_app
+flutter test --coverage
+```
+
+**커버리지 리포트 생성 (선택사항):**
+```bash
+# HTML 리포트 생성 (genhtml 필요)
+genhtml coverage/lcov.info -o coverage/html
+open coverage/html/index.html
+```
+
+**pubspec.yaml에 커버리지 도구 추가:**
+```yaml
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  coverage: ^1.6.0  # 커버리지 도구
+```
 
 ---
 

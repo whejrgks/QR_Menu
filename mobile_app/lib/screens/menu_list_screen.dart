@@ -66,36 +66,18 @@ class MenuListScreen extends ConsumerWidget {
             );
           }
           
-          // 반응형 레이아웃: 태블릿/데스크톱에서는 그리드 뷰 사용
-          if (ResponsiveUtils.isTablet(context) || ResponsiveUtils.isDesktop(context)) {
-            final columnCount = ResponsiveUtils.getColumnCount(context);
-            final padding = ResponsiveUtils.getPadding(context);
-            
-            return GridView.builder(
-              padding: EdgeInsets.all(padding),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columnCount,
-                crossAxisSpacing: padding,
-                mainAxisSpacing: padding,
-                childAspectRatio: 1.2,
-              ),
-              itemCount: menus.length,
-              itemBuilder: (context, index) {
-                final menu = menus[index];
-                return _buildMenuCard(context, menu);
-              },
-            );
-          }
+          // 가로로 3개씩 그리드 뷰 사용
+          final padding = ResponsiveUtils.getPadding(context);
           
-          // 모바일: 리스트 뷰 사용
-          return ListView.builder(
+          return GridView.builder(
+            padding: EdgeInsets.all(padding),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // 가로로 3개씩
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.75, // 카드 비율 조정
+            ),
             itemCount: menus.length,
-            // 성능 최적화: 자동 keep-alive 비활성화 (메모리 절약)
-            addAutomaticKeepAlives: false,
-            // 성능 최적화: 리빌드 경계 추가 (불필요한 리빌드 방지)
-            addRepaintBoundaries: true,
-            // 성능 최적화: 아이템 높이 캐싱 (스크롤 성능 향상)
-            cacheExtent: 500,
             itemBuilder: (context, index) {
               final menu = menus[index];
               return _buildMenuCard(context, menu);
@@ -118,93 +100,8 @@ class MenuListScreen extends ConsumerWidget {
 
   /// 메뉴 카드 위젯 빌드
   Widget _buildMenuCard(BuildContext context, MenuItem menu) {
-    final isTabletOrDesktop = ResponsiveUtils.isTablet(context) || 
-                              ResponsiveUtils.isDesktop(context);
-    
-    if (isTabletOrDesktop) {
-      // 태블릿/데스크톱: 그리드 카드
-      return Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MenuDetailScreen(menuId: menu.id),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 이미지
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                  child: menu.imageUrl != null
-                      ? SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: buildMenuThumbnail(
-                            imageUrl: menu.imageUrl!,
-                          ),
-                        )
-                      : Container(
-                          width: double.infinity,
-                          color: Colors.grey[200],
-                          child: const Icon(
-                            Icons.restaurant_menu,
-                            size: 60,
-                            color: Colors.grey,
-                          ),
-                        ),
-                ),
-              ),
-              // 메뉴 정보
-              Padding(
-                padding: const EdgeInsets.all(AppPadding.small),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      menu.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formatPriceSimple(menu.price),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    
-    // 모바일: 리스트 카드
+    // 그리드 카드 형식 (가로 3개씩)
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppPadding.medium,
-        vertical: AppPadding.small,
-      ),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -219,21 +116,26 @@ class MenuListScreen extends ConsumerWidget {
           );
         },
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(AppPadding.small),
-          child: Row(
-            children: [
-              // 이미지
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 이미지
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
                 child: menu.imageUrl != null
-                    ? buildMenuThumbnail(
-                        imageUrl: menu.imageUrl!,
-                        size: 80,
+                    ? SizedBox(
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: buildMenuThumbnail(
+                          imageUrl: menu.imageUrl!,
+                        ),
                       )
                     : Container(
-                        width: 80,
-                        height: 80,
+                        width: double.infinity,
                         color: Colors.grey[200],
                         child: const Icon(
                           Icons.restaurant_menu,
@@ -242,36 +144,29 @@ class MenuListScreen extends ConsumerWidget {
                         ),
                       ),
               ),
-              const SizedBox(width: AppPadding.medium),
-              // 메뉴 정보
-              Expanded(
+            ),
+            // 메뉴 정보
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       menu.name,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      menu.description,
-                      style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
                     Text(
                       formatPriceSimple(menu.price),
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).primaryColor,
                       ),
@@ -279,14 +174,8 @@ class MenuListScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: AppPadding.small),
-              // 화살표 아이콘
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

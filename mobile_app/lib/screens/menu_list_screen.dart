@@ -41,6 +41,14 @@ class MenuListScreen extends ConsumerWidget {
         title: const Text('메뉴 목록'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              // 메뉴 목록 새로고침
+              ref.invalidate(menuListProvider);
+            },
+            tooltip: '새로고침',
+          ),
+          IconButton(
             icon: const Icon(Icons.admin_panel_settings),
             onPressed: () {
               Navigator.pushNamed(context, '/admin');

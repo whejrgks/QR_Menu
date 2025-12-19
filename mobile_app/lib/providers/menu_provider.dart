@@ -6,7 +6,7 @@ import '../models/menu_item.dart';
 /// MenuService Provider
 /// 
 /// MenuService 인스턴스를 제공하는 Provider입니다.
-/// 의존성 주입을 통해 MenuService를 사용할 수 있도록 합니다.
+/// 싱글톤 패턴으로 동일한 인스턴스를 반환하여 데이터 일관성을 보장합니다.
 /// 
 /// **사용 예시:**
 /// ```dart
@@ -14,6 +14,8 @@ import '../models/menu_item.dart';
 /// final menus = await menuService.getAvailableMenus();
 /// ```
 final menuServiceProvider = Provider<MenuService>((ref) {
+  // 싱글톤 패턴: 동일한 인스턴스를 반환하여 데이터 일관성 보장
+  ref.keepAlive();
   return MenuServiceImpl();
 });
 
@@ -38,8 +40,8 @@ final menuListProvider = FutureProvider<List<MenuItem>>((ref) async {
   final menuService = ref.watch(menuServiceProvider);
   final menus = await menuService.getAvailableMenus();
   
-  // 데이터 캐싱을 위한 keepAlive 설정
-  ref.keepAlive();
+  // keepAlive 제거: 변경사항이 즉시 반영되도록 함
+  // 필요시 자동으로 다시 로드됨
   
   return menus;
 });
@@ -70,8 +72,7 @@ final menuDetailProvider = FutureProvider.family<MenuItem?, String>((ref, menuId
   final menuService = ref.watch(menuServiceProvider);
   final menu = await menuService.getMenuById(menuId);
   
-  // 데이터 캐싱을 위한 keepAlive 설정
-  ref.keepAlive();
+  // keepAlive 제거: 변경사항이 즉시 반영되도록 함
   
   return menu;
 });
@@ -97,8 +98,7 @@ final adminMenuListProvider = FutureProvider<List<MenuItem>>((ref) async {
   final menuService = ref.watch(menuServiceProvider);
   final menus = await menuService.getAllMenus();
   
-  // 데이터 캐싱을 위한 keepAlive 설정
-  ref.keepAlive();
+  // keepAlive 제거: 변경사항이 즉시 반영되도록 함
   
   return menus;
 });

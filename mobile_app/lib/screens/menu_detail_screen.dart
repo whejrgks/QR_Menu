@@ -6,12 +6,13 @@ import '../models/menu_item.dart';
 /// 메뉴 상세 화면 위젯
 class MenuDetailScreen extends StatelessWidget {
   final String menuId;
-  final MenuService menuService = MenuServiceImpl();
+  final MenuService menuService;
 
-  const MenuDetailScreen({
+  MenuDetailScreen({
     Key? key,
     required this.menuId,
-  }) : super(key: key);
+  }) : menuService = MenuServiceImpl(),
+       super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -13,7 +13,7 @@ void main() {
     testWidgets('메뉴 화면이 로드되면 판매 중인 메뉴 목록이 표시되어야 한다', (WidgetTester tester) async {
       // Given: QR 코드 스캔 시나리오
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: MenuListScreen(),
         ),
       );

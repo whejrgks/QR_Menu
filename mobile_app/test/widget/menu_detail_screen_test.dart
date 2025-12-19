@@ -14,7 +14,7 @@ void main() {
       // Given: 메뉴 목록 화면
       const menuId = 'menu-001';
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: MenuDetailScreen(menuId: menuId),
         ),
       );

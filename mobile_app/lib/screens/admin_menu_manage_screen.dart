@@ -4,7 +4,9 @@ import '../providers/menu_provider.dart';
 import '../models/menu_item.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
+import '../widgets/menu_form_dialog.dart';
 import '../utils/format_utils.dart';
+import '../utils/image_utils.dart';
 import '../constants/app_constants.dart';
 
 /// 관리자 메뉴 관리 화면
@@ -16,49 +18,159 @@ class AdminMenuManageScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
-  // 로컬 상태: 메뉴 상태 토글을 위한 임시 상태 관리
-  // 실제 구현에서는 StateNotifier를 사용하여 전역 상태로 관리하는 것이 좋습니다
-  List<MenuItem> _localMenus = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void _refreshMenus() {
     // Provider를 통해 메뉴 목록 새로고침
     ref.invalidate(adminMenuListProvider);
+    ref.invalidate(menuListProvider); // 고객 화면도 새로고침
   }
 
   Future<void> _toggleAvailability(MenuItem menu) async {
-    // 품절 상태 토글 (실제로는 API 호출)
-    setState(() {
-      final index = _localMenus.indexWhere((m) => m.id == menu.id);
-      if (index != -1) {
-        // Mock 데이터는 불변 객체이므로 새로 생성
-        final updatedMenu = MenuItem(
-          id: menu.id,
-          name: menu.name,
-          description: menu.description,
-          price: menu.price,
-          imageUrl: menu.imageUrl,
-          allergens: menu.allergens,
-          isAvailable: !menu.isAvailable,
-        );
-        _localMenus[index] = updatedMenu;
-      }
-    });
+    // MenuService를 통해 품절 상태 업데이트
+    final menuService = ref.read(menuServiceProvider);
+    final newAvailability = !menu.isAvailable;
+    
+    final updatedMenu = await menuService.updateMenuAvailability(
+      menu.id,
+      newAvailability,
+    );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          menu.isAvailable
-              ? '${menu.name}을(를) 품절 처리했습니다.'
-              : '${menu.name}을(를) 판매 가능으로 변경했습니다.',
+    if (updatedMenu != null) {
+      // Provider를 invalidate하여 변경사항 반영
+      ref.invalidate(adminMenuListProvider);
+      ref.invalidate(menuListProvider); // 고객 화면도 새로고침
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newAvailability
+                ? '${menu.name}을(를) 판매 가능으로 변경했습니다.'
+                : '${menu.name}을(를) 품절 처리했습니다.',
+          ),
+          duration: const Duration(seconds: 2),
         ),
-        duration: const Duration(seconds: 2),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('메뉴 상태 변경에 실패했습니다.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _addMenu() async {
+    final result = await showDialog<MenuItem>(
+      context: context,
+      builder: (context) => const MenuFormDialog(),
+    );
+
+    if (result != null) {
+      final menuService = ref.read(menuServiceProvider);
+      await menuService.addMenu(result);
+      
+      // Provider를 invalidate하여 변경사항 반영
+      ref.invalidate(adminMenuListProvider);
+      ref.invalidate(menuListProvider); // 고객 화면도 새로고침
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${result.name}이(가) 추가되었습니다.'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editMenu(MenuItem menu) async {
+    final result = await showDialog<MenuItem>(
+      context: context,
+      builder: (context) => MenuFormDialog(menu: menu),
+    );
+
+    if (result != null) {
+      final menuService = ref.read(menuServiceProvider);
+      final updatedMenu = await menuService.updateMenu(result);
+      
+      if (updatedMenu != null) {
+        // Provider를 invalidate하여 변경사항 반영
+        ref.invalidate(adminMenuListProvider);
+        ref.invalidate(menuListProvider); // 고객 화면도 새로고침
+        ref.invalidate(menuDetailProvider(menu.id)); // 상세 화면도 새로고침
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${result.name}이(가) 수정되었습니다.'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('메뉴 수정에 실패했습니다.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteMenu(MenuItem menu) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('메뉴 삭제'),
+        content: Text('${menu.name}을(를) 정말 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('삭제'),
+          ),
+        ],
       ),
     );
+
+    if (confirm == true) {
+      final menuService = ref.read(menuServiceProvider);
+      final success = await menuService.deleteMenu(menu.id);
+      
+      if (success) {
+        // Provider를 invalidate하여 변경사항 반영
+        ref.invalidate(adminMenuListProvider);
+        ref.invalidate(menuListProvider); // 고객 화면도 새로고침
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${menu.name}이(가) 삭제되었습니다.'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('메뉴 삭제에 실패했습니다.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -78,30 +190,23 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
       ),
       body: menuListAsync.when(
         data: (menus) {
-          // 로컬 상태가 비어있거나 길이가 다르면 Provider 데이터로 동기화
-          if (_localMenus.isEmpty || _localMenus.length != menus.length) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() {
-                  _localMenus = List.from(menus);
-                });
-              }
-            });
-            // 초기 로딩 중에는 Provider 데이터를 직접 사용
-            return ListView.builder(
-              itemCount: menus.length,
-              itemBuilder: (context, index) {
-                final menu = menus[index];
-                return _buildMenuCard(menu);
-              },
+          if (menus.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text(
+                  '등록된 메뉴가 없습니다.\n우측 하단의 + 버튼을 눌러 메뉴를 추가하세요.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ),
             );
           }
           
-          // 로컬 상태가 준비되면 로컬 상태 사용
           return ListView.builder(
-            itemCount: _localMenus.length,
+            itemCount: menus.length,
             itemBuilder: (context, index) {
-              final menu = _localMenus[index];
+              final menu = menus[index];
               return _buildMenuCard(menu);
             },
           );
@@ -116,13 +221,7 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('메뉴 추가 기능은 향후 구현 예정입니다.'),
-            ),
-          );
-        },
+        onPressed: _addMenu,
         child: const Icon(Icons.add),
         tooltip: '메뉴 추가',
       ),
@@ -133,67 +232,158 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
   Widget _buildMenuCard(MenuItem menu) {
     return Card(
       margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
+        horizontal: AppPadding.medium,
+        vertical: AppPadding.small,
       ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: menu.isAvailable ? Colors.green : Colors.red,
-          child: Icon(
-            menu.isAvailable ? Icons.check : Icons.close,
-            color: Colors.white,
-          ),
-        ),
-        title: Text(
-          menu.name,
-          style: TextStyle(
-            decoration: menu.isAvailable
-                ? TextDecoration.none
-                : TextDecoration.lineThrough,
-            color: menu.isAvailable ? Colors.black : Colors.grey,
-          ),
-        ),
-        subtitle: Text(formatPriceSimple(menu.price)),
-        trailing: Switch(
-          value: menu.isAvailable,
-          onChanged: (_) => _toggleAvailability(menu),
-        ),
-        onTap: () {
-          // 메뉴 상세 정보 표시
-          showDialog(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () => _editMenu(menu),
+        onLongPress: () {
+          // 길게 누르면 삭제 옵션 표시
+          showModalBottomSheet(
             context: context,
-            builder: (context) => AlertDialog(
-              title: Text(menu.name),
-              content: Column(
+            builder: (context) => SafeArea(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('가격: ${formatPriceSimple(menu.price)}'),
-                  const SizedBox(height: 8),
-                  Text('설명: ${menu.description}'),
-                  if (menu.allergens != null && menu.allergens!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text('알레르기: ${menu.allergens!.join(", ")}'),
-                  ],
-                  const SizedBox(height: 8),
-                  Text(
-                    '상태: ${menu.isAvailable ? "판매 중" : "품절"}',
-                    style: TextStyle(
-                      color: menu.isAvailable ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  ListTile(
+                    leading: const Icon(Icons.edit),
+                    title: const Text('수정'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _editMenu(menu);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.red),
+                    title: const Text('삭제', style: TextStyle(color: Colors.red)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _deleteMenu(menu);
+                    },
                   ),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('닫기'),
-                ),
-              ],
             ),
           );
         },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(AppPadding.small),
+          child: Row(
+            children: [
+              // 이미지 또는 상태 아이콘
+              if (menu.imageUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: buildMenuThumbnail(
+                    imageUrl: menu.imageUrl!,
+                    size: 60,
+                  ),
+                )
+              else
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: menu.isAvailable ? Colors.green[100] : Colors.red[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    menu.isAvailable ? Icons.restaurant_menu : Icons.restaurant_menu_outlined,
+                    color: menu.isAvailable ? Colors.green : Colors.red,
+                    size: 30,
+                  ),
+                ),
+              const SizedBox(width: AppPadding.medium),
+              // 메뉴 정보
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            menu.name,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              decoration: menu.isAvailable
+                                  ? TextDecoration.none
+                                  : TextDecoration.lineThrough,
+                              color: menu.isAvailable ? Colors.black : Colors.grey,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: menu.isAvailable ? Colors.green : Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            menu.isAvailable ? '판매중' : '품절',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatPriceSimple(menu.price),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    if (menu.description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        menu.description,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppPadding.small),
+              // 스위치 및 편집 아이콘
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Switch(
+                    value: menu.isAvailable,
+                    onChanged: (_) => _toggleAvailability(menu),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () => _editMenu(menu),
+                    tooltip: '수정',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -4,10 +4,12 @@ import '../data/menu_mock_data.dart';
 
 /// MenuService 인터페이스 구현체
 /// 
-/// Mock 데이터를 사용하여 메뉴 정보를 제공하는 구현체입니다.
+/// 메모리 기반으로 메뉴 정보를 관리하는 구현체입니다.
+/// 초기 데이터는 Mock 데이터를 사용하며, 런타임 중 변경사항은 메모리에 저장됩니다.
 /// 
 /// **현재 상태:**
-/// - Mock 데이터를 사용하여 메뉴 정보를 제공합니다.
+/// - 메모리 기반 메뉴 관리
+/// - 초기값은 Mock 데이터 사용
 /// - 향후 실제 API나 Database 연동으로 교체 가능합니다.
 /// 
 /// **사용 예시:**
@@ -16,37 +18,96 @@ import '../data/menu_mock_data.dart';
 /// final menus = await menuService.getAvailableMenus();
 /// ```
 class MenuServiceImpl implements MenuService {
+  // 메모리 기반 메뉴 저장소
+  static List<MenuItem> _menus = [];
+
+  // 초기화 여부 확인
+  static bool _initialized = false;
+
+  /// 초기 데이터 로드 (Mock 데이터 사용)
+  void _initializeIfNeeded() {
+    if (!_initialized) {
+      _menus = List.from(MenuMockData.getMenusWithOutOfStock());
+      _initialized = true;
+    }
+  }
+
+  MenuServiceImpl() {
+    _initializeIfNeeded();
+  }
+
   @override
   Future<List<MenuItem>> getAvailableMenus() async {
-    // 1. Mock 데이터에서 모든 메뉴 가져오기 (품절 메뉴 포함)
-    final allMenus = MenuMockData.getMenusWithOutOfStock();
-    
-    // 2. 품절 메뉴 필터링 (isAvailable == true인 메뉴만)
-    final availableMenus = allMenus.where((menu) => menu.isAvailable).toList();
-    
-    // 3. Future로 반환 (비동기 처리)
-    return Future.value(availableMenus);
+    _initializeIfNeeded();
+    // 품절 메뉴 필터링 (isAvailable == true인 메뉴만)
+    return _menus.where((menu) => menu.isAvailable).toList();
   }
 
   @override
   Future<MenuItem?> getMenuById(String id) async {
-    // 1. Mock 데이터에서 모든 메뉴 가져오기
-    final allMenus = MenuMockData.getAvailableMenus();
-    
-    // 2. ID로 메뉴 검색
+    _initializeIfNeeded();
     try {
-      final menu = allMenus.firstWhere((menu) => menu.id == id);
-      return Future.value(menu);
+      return _menus.firstWhere((menu) => menu.id == id);
     } catch (e) {
-      // 3. 존재하지 않는 ID인 경우 null 반환
-      return Future.value(null);
+      return null;
     }
   }
 
   @override
   Future<List<MenuItem>> getAllMenus() async {
-    // 모든 메뉴 가져오기 (품절 포함) - 관리자용
-    return Future.value(MenuMockData.getMenusWithOutOfStock());
+    _initializeIfNeeded();
+    return List.from(_menus);
+  }
+
+  @override
+  Future<MenuItem?> updateMenuAvailability(String menuId, bool isAvailable) async {
+    _initializeIfNeeded();
+    final index = _menus.indexWhere((menu) => menu.id == menuId);
+    if (index == -1) {
+      return null;
+    }
+
+    final menu = _menus[index];
+    final updatedMenu = MenuItem(
+      id: menu.id,
+      name: menu.name,
+      description: menu.description,
+      price: menu.price,
+      imageUrl: menu.imageUrl,
+      allergens: menu.allergens,
+      isAvailable: isAvailable,
+    );
+    _menus[index] = updatedMenu;
+    return updatedMenu;
+  }
+
+  @override
+  Future<MenuItem> addMenu(MenuItem menu) async {
+    _initializeIfNeeded();
+    _menus.add(menu);
+    return menu;
+  }
+
+  @override
+  Future<MenuItem?> updateMenu(MenuItem menu) async {
+    _initializeIfNeeded();
+    final index = _menus.indexWhere((m) => m.id == menu.id);
+    if (index == -1) {
+      return null;
+    }
+    _menus[index] = menu;
+    return menu;
+  }
+
+  @override
+  Future<bool> deleteMenu(String menuId) async {
+    _initializeIfNeeded();
+    final index = _menus.indexWhere((menu) => menu.id == menuId);
+    if (index == -1) {
+      return false;
+    }
+    _menus.removeAt(index);
+    return true;
   }
 }
 

@@ -48,5 +48,42 @@ abstract class MenuService {
   /// **예외:**
   /// - 네트워크 오류나 데이터 로딩 실패 시 예외가 발생할 수 있습니다.
   Future<List<MenuItem>> getAllMenus();
+
+  /// 메뉴의 품절 상태를 업데이트합니다.
+  /// 
+  /// **매개변수:**
+  /// - [menuId]: 업데이트할 메뉴의 고유 ID
+  /// - [isAvailable]: 새로운 품절 상태 (true: 판매 중, false: 품절)
+  /// 
+  /// **반환값:**
+  /// - [MenuItem?]: 업데이트된 메뉴 정보 (존재하지 않는 경우 null)
+  Future<MenuItem?> updateMenuAvailability(String menuId, bool isAvailable);
+
+  /// 새 메뉴를 추가합니다.
+  /// 
+  /// **매개변수:**
+  /// - [menu]: 추가할 메뉴 정보
+  /// 
+  /// **반환값:**
+  /// - [MenuItem]: 추가된 메뉴 정보
+  Future<MenuItem> addMenu(MenuItem menu);
+
+  /// 메뉴 정보를 업데이트합니다.
+  /// 
+  /// **매개변수:**
+  /// - [menu]: 업데이트할 메뉴 정보
+  /// 
+  /// **반환값:**
+  /// - [MenuItem?]: 업데이트된 메뉴 정보 (존재하지 않는 경우 null)
+  Future<MenuItem?> updateMenu(MenuItem menu);
+
+  /// 메뉴를 삭제합니다.
+  /// 
+  /// **매개변수:**
+  /// - [menuId]: 삭제할 메뉴의 고유 ID
+  /// 
+  /// **반환값:**
+  /// - [bool]: 삭제 성공 여부
+  Future<bool> deleteMenu(String menuId);
 }
 

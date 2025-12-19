@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_menu_manage_screen.dart';
+import '../constants/app_constants.dart';
 
 /// 관리자 로그인 화면
 class AdminLoginScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class AdminLoginScreen extends StatefulWidget {
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _passwordController = TextEditingController();
-  final String _adminPassword = 'admin123'; // 임시 비밀번호
+  final String _adminPassword = AdminConstants.defaultPassword;
 
   @override
   void dispose() {
@@ -82,9 +83,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              '※ 테스트용 비밀번호: admin123',
-              style: TextStyle(
+            Text(
+              AdminConstants.passwordHint,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
               ),

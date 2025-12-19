@@ -52,24 +52,27 @@ Widget buildNetworkImage({
 /// 리스트에서 사용하는 작은 이미지용 최적화 버전
 Widget buildMenuThumbnail({
   required String imageUrl,
-  double size = 60.0,
+  double? size,
 }) {
+  final width = size;
+  final height = size;
+  
   return CachedNetworkImage(
     imageUrl: imageUrl,
-    width: size,
-    height: size,
+    width: width,
+    height: height,
     fit: BoxFit.cover,
     placeholder: (context, url) => Container(
-      width: size,
-      height: size,
+      width: width,
+      height: height,
       color: Colors.grey[200],
       child: const Center(
         child: CircularProgressIndicator(strokeWidth: 2),
       ),
     ),
     errorWidget: (context, url, error) => Container(
-      width: size,
-      height: size,
+      width: width,
+      height: height,
       color: Colors.grey[300],
       child: const Icon(
         Icons.image_not_supported,
@@ -77,9 +80,9 @@ Widget buildMenuThumbnail({
         size: 24,
       ),
     ),
-    // 썸네일용 메모리 캐시 최적화
-    memCacheWidth: size.toInt(),
-    memCacheHeight: size.toInt(),
+    // 썸네일용 메모리 캐시 최적화 (null이거나 infinity가 아닌 경우에만)
+    memCacheWidth: width != null && width != double.infinity ? width.toInt() : null,
+    memCacheHeight: height != null && height != double.infinity ? height.toInt() : null,
   );
 }
 

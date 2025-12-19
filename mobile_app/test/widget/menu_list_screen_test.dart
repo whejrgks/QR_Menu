@@ -26,7 +26,12 @@ void main() {
       
       // Then: 판매 중인 메뉴 목록 표시 확인
       expect(find.text('메뉴 목록'), findsOneWidget);
-      expect(find.byType(ListView), findsOneWidget);
+      // ListView 또는 GridView 중 하나가 있어야 함 (반응형 디자인)
+      expect(
+        find.byType(ListView).evaluate().isNotEmpty || 
+        find.byType(GridView).evaluate().isNotEmpty,
+        isTrue,
+      );
     });
   });
 }

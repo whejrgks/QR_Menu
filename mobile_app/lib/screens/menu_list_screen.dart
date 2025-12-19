@@ -4,9 +4,11 @@ import '../providers/menu_provider.dart';
 import '../models/menu_item.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
-import '../widgets/empty_state_widget.dart';
+import '../widgets/error_widget.dart';
 import '../utils/format_utils.dart';
+import '../utils/image_utils.dart';
 import '../constants/app_constants.dart';
+import 'menu_detail_screen.dart';
 
 /// 메뉴 목록 화면 위젯
 class MenuListScreen extends ConsumerWidget {
@@ -40,11 +42,35 @@ class MenuListScreen extends ConsumerWidget {
           
           return ListView.builder(
             itemCount: menus.length,
+            // 성능 최적화: 자동 keep-alive 비활성화 (메모리 절약)
+            addAutomaticKeepAlives: false,
+            // 성능 최적화: 리빌드 경계 추가 (불필요한 리빌드 방지)
+            addRepaintBoundaries: true,
+            // 성능 최적화: 아이템 높이 캐싱 (스크롤 성능 향상)
+            cacheExtent: 500,
             itemBuilder: (context, index) {
               final menu = menus[index];
               return ListTile(
+                leading: menu.imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: buildMenuThumbnail(
+                          imageUrl: menu.imageUrl!,
+                          size: 60,
+                        ),
+                      )
+                    : const Icon(Icons.restaurant_menu),
                 title: Text(menu.name),
                 subtitle: Text(formatPriceSimple(menu.price)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuDetailScreen(menuId: menu.id),
+                    ),
+                  );
+                },
               );
             },
           );

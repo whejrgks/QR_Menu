@@ -11,22 +11,40 @@ final menuServiceProvider = Provider<MenuService>((ref) {
 
 /// 메뉴 목록 Provider
 /// 판매 가능한 메뉴 목록을 제공하는 FutureProvider
+/// 성능 최적화: keepAlive를 통해 데이터 캐싱 및 불필요한 재로딩 방지
 final menuListProvider = FutureProvider<List<MenuItem>>((ref) async {
   final menuService = ref.watch(menuServiceProvider);
-  return await menuService.getAvailableMenus();
+  final menus = await menuService.getAvailableMenus();
+  
+  // 데이터 캐싱을 위한 keepAlive 설정
+  ref.keepAlive();
+  
+  return menus;
 });
 
 /// 메뉴 상세 Provider
 /// 특정 ID의 메뉴 상세 정보를 제공하는 FutureProvider
+/// 성능 최적화: keepAlive를 통해 데이터 캐싱 및 불필요한 재로딩 방지
 final menuDetailProvider = FutureProvider.family<MenuItem?, String>((ref, menuId) async {
   final menuService = ref.watch(menuServiceProvider);
-  return await menuService.getMenuById(menuId);
+  final menu = await menuService.getMenuById(menuId);
+  
+  // 데이터 캐싱을 위한 keepAlive 설정
+  ref.keepAlive();
+  
+  return menu;
 });
 
 /// 관리자용 메뉴 목록 Provider
 /// 모든 메뉴 목록을 제공하는 FutureProvider (품절 포함)
+/// 성능 최적화: keepAlive를 통해 데이터 캐싱 및 불필요한 재로딩 방지
 final adminMenuListProvider = FutureProvider<List<MenuItem>>((ref) async {
   final menuService = ref.watch(menuServiceProvider);
-  return await menuService.getAllMenus();
+  final menus = await menuService.getAllMenus();
+  
+  // 데이터 캐싱을 위한 keepAlive 설정
+  ref.keepAlive();
+  
+  return menus;
 });
 

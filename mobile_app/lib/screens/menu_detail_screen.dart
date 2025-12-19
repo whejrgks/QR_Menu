@@ -10,6 +10,27 @@ import '../utils/image_utils.dart';
 import '../constants/app_constants.dart';
 
 /// 메뉴 상세 화면 위젯
+/// 
+/// 특정 메뉴의 상세 정보를 표시하는 화면입니다.
+/// 
+/// **기능:**
+/// - 메뉴 이미지, 이름, 가격, 설명 표시
+/// - 알레르기 정보를 Chip으로 표시
+/// - 스켈레톤 UI를 통한 로딩 상태 표시
+/// - 에러 발생 시 재시도 및 돌아가기 기능 제공
+/// 
+/// **매개변수:**
+/// - [menuId]: 표시할 메뉴의 고유 ID
+/// 
+/// **사용 예시:**
+/// ```dart
+/// Navigator.push(
+///   context,
+///   MaterialPageRoute(
+///     builder: (context) => MenuDetailScreen(menuId: 'menu-001'),
+///   ),
+/// );
+/// ```
 class MenuDetailScreen extends ConsumerWidget {
   final String menuId;
 

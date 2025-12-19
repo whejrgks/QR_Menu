@@ -12,6 +12,23 @@ import '../constants/app_constants.dart';
 import 'menu_detail_screen.dart';
 
 /// 메뉴 목록 화면 위젯
+/// 
+/// 고객이 QR 코드를 스캔하여 접근하는 메뉴 목록 화면입니다.
+/// 
+/// **기능:**
+/// - 판매 가능한 메뉴 목록 표시
+/// - 메뉴 클릭 시 상세 화면으로 이동
+/// - 반응형 디자인 지원 (모바일: ListView, 태블릿/데스크톱: GridView)
+/// - 스켈레톤 UI를 통한 로딩 상태 표시
+/// - 에러 발생 시 재시도 기능 제공
+/// 
+/// **사용 예시:**
+/// ```dart
+/// Navigator.push(
+///   context,
+///   MaterialPageRoute(builder: (context) => MenuListScreen()),
+/// );
+/// ```
 class MenuListScreen extends ConsumerWidget {
   const MenuListScreen({Key? key}) : super(key: key);
 

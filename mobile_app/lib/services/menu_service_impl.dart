@@ -3,6 +3,18 @@ import 'menu_service.dart';
 import '../data/menu_mock_data.dart';
 
 /// MenuService 인터페이스 구현체
+/// 
+/// Mock 데이터를 사용하여 메뉴 정보를 제공하는 구현체입니다.
+/// 
+/// **현재 상태:**
+/// - Mock 데이터를 사용하여 메뉴 정보를 제공합니다.
+/// - 향후 실제 API나 Database 연동으로 교체 가능합니다.
+/// 
+/// **사용 예시:**
+/// ```dart
+/// final menuService = MenuServiceImpl();
+/// final menus = await menuService.getAvailableMenus();
+/// ```
 class MenuServiceImpl implements MenuService {
   @override
   Future<List<MenuItem>> getAvailableMenus() async {

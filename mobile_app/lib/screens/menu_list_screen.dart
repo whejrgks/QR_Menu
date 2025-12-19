@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import '../services/menu_service.dart';
-import '../services/menu_service_impl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/menu_provider.dart';
 import '../models/menu_item.dart';
 
 /// 메뉴 목록 화면 위젯
-class MenuListScreen extends StatelessWidget {
-  final MenuService menuService;
-
-  MenuListScreen({Key? key}) 
-      : menuService = MenuServiceImpl(),
-        super(key: key);
+class MenuListScreen extends ConsumerWidget {
+  const MenuListScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final menuListAsync = ref.watch(menuListProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('메뉴 목록'),
@@ -26,18 +24,11 @@ class MenuListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: FutureBuilder<List<MenuItem>>(
-        future: menuService.getAvailableMenus(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+      body: menuListAsync.when(
+        data: (menus) {
+          if (menus.isEmpty) {
+            return const Center(child: Text('메뉴가 없습니다.'));
           }
-          
-          if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(child: Text('메뉴를 불러올 수 없습니다.'));
-          }
-
-          final menus = snapshot.data!;
           
           return ListView.builder(
             itemCount: menus.length,
@@ -50,6 +41,10 @@ class MenuListScreen extends StatelessWidget {
             },
           );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => const Center(
+          child: Text('메뉴를 불러올 수 없습니다.'),
+        ),
       ),
     );
   }

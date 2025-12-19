@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_menu/screens/menu_detail_screen.dart';
 
-/// GREEN 단계: 테스트 통과 확인
+/// REFACTOR 단계: 상태 관리 도입 후 테스트
 /// 
 /// Scenario: 고객이 메뉴 상세 정보를 확인한다
 /// Given 고객이 메뉴 목록을 보고 있을 때
@@ -14,8 +15,10 @@ void main() {
       // Given: 메뉴 목록 화면
       const menuId = 'menu-001';
       await tester.pumpWidget(
-        MaterialApp(
-          home: MenuDetailScreen(menuId: menuId),
+        const ProviderScope(
+          child: MaterialApp(
+            home: MenuDetailScreen(menuId: menuId),
+          ),
         ),
       );
       

@@ -30,5 +30,11 @@ class MenuServiceImpl implements MenuService {
       return Future.value(null);
     }
   }
+
+  @override
+  Future<List<MenuItem>> getAllMenus() async {
+    // 모든 메뉴 가져오기 (품절 포함) - 관리자용
+    return Future.value(MenuMockData.getMenusWithOutOfStock());
+  }
 }
 

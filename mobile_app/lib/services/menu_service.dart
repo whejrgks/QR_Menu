@@ -4,5 +4,7 @@ import '../models/menu_item.dart';
 abstract class MenuService {
   Future<List<MenuItem>> getAvailableMenus();
   Future<MenuItem?> getMenuById(String id);
+  /// 모든 메뉴 목록 가져오기 (품절 포함) - 관리자용
+  Future<List<MenuItem>> getAllMenus();
 }
 

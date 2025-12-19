@@ -1,38 +1,31 @@
 import 'package:flutter/material.dart';
-import '../services/menu_service.dart';
-import '../services/menu_service_impl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/menu_provider.dart';
 import '../models/menu_item.dart';
 
 /// 메뉴 상세 화면 위젯
-class MenuDetailScreen extends StatelessWidget {
+class MenuDetailScreen extends ConsumerWidget {
   final String menuId;
-  final MenuService menuService;
 
-  MenuDetailScreen({
+  const MenuDetailScreen({
     Key? key,
     required this.menuId,
-  }) : menuService = MenuServiceImpl(),
-       super(key: key);
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final menuDetailAsync = ref.watch(menuDetailProvider(menuId));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('메뉴 상세'),
       ),
-      body: FutureBuilder<MenuItem?>(
-        future: menuService.getMenuById(menuId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+      body: menuDetailAsync.when(
+        data: (menu) {
+          if (menu == null) {
             return const Center(child: Text('메뉴를 찾을 수 없습니다.'));
           }
 
-          final menu = snapshot.data!;
-          
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -85,6 +78,10 @@ class MenuDetailScreen extends StatelessWidget {
             ),
           );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => const Center(
+          child: Text('메뉴를 찾을 수 없습니다.'),
+        ),
       ),
     );
   }

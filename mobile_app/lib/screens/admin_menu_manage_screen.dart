@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/menu_provider.dart';
 import '../models/menu_item.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
+import '../utils/format_utils.dart';
+import '../constants/app_constants.dart';
 
 /// 관리자 메뉴 관리 화면
 class AdminMenuManageScreen extends ConsumerStatefulWidget {
@@ -102,52 +106,12 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingWidget(),
         error: (error, stackTrace) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    '메뉴를 불러올 수 없습니다.',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '인터넷 연결을 확인하거나\n잠시 후 다시 시도해주세요.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _refreshMenus,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('다시 시도'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          return ErrorDisplayWidget(
+            title: '메뉴를 불러올 수 없습니다.',
+            subtitle: '인터넷 연결을 확인하거나\n잠시 후 다시 시도해주세요.',
+            onRetry: _refreshMenus,
           );
         },
       ),
@@ -189,7 +153,7 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
             color: menu.isAvailable ? Colors.black : Colors.grey,
           ),
         ),
-        subtitle: Text('${menu.price.toStringAsFixed(0)}원'),
+        subtitle: Text(formatPriceSimple(menu.price)),
         trailing: Switch(
           value: menu.isAvailable,
           onChanged: (_) => _toggleAvailability(menu),
@@ -204,7 +168,7 @@ class _AdminMenuManageScreenState extends ConsumerState<AdminMenuManageScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('가격: ${menu.price.toStringAsFixed(0)}원'),
+                  Text('가격: ${formatPriceSimple(menu.price)}'),
                   const SizedBox(height: 8),
                   Text('설명: ${menu.description}'),
                   if (menu.allergens != null && menu.allergens!.isNotEmpty) ...[

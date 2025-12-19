@@ -1,0 +1,24 @@
+name: qr_menu
+description: Flutter 기반 QR 디지털 메뉴판 시스템
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.1.0
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+

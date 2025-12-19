@@ -241,20 +241,25 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
 
 #### 1. 테스트 작성 전 준비사항
 
-- [ ] **기능 요구사항 분석**
+- [x] **기능 요구사항 분석**
   - PRD의 Gherkin 시나리오를 기반으로 테스트 케이스 도출
   - 각 시나리오별 Given-When-Then 구조를 테스트 코드로 변환
+  - ✅ `mobile_app/test/TEST_CASES.md`에 테스트 케이스 문서화 완료
 
-- [ ] **테스트 환경 설정**
+- [x] **테스트 환경 설정**
   - Flutter 테스트 패키지 설정 (`flutter_test`)
   - Mock 데이터 및 테스트 더미 준비
   - 테스트 데이터베이스 또는 Mock API 설정
+  - ✅ `mobile_app/pubspec.yaml`에 테스트 의존성 추가 완료
+  - ✅ `mobile_app/test/mock_data/menu_mock_data.dart` Mock 데이터 준비 완료
 
 #### 2. 실패하는 테스트 작성
 
-- [ ] **고객용 메뉴판 기능 테스트**
+- [x] **고객용 메뉴판 기능 테스트**
+  - ✅ `mobile_app/test/unit/menu_service_test.dart` - 메뉴 조회 테스트 작성 완료
+  - ✅ `mobile_app/test/widget/menu_list_screen_test.dart` - 메뉴 목록 화면 테스트 작성 완료
   ```dart
-  // 예시: 메뉴 목록 조회 테스트
+  // 작성 완료: test/unit/menu_service_test.dart
   test('고객이 QR 코드를 스캔하면 판매 중인 메뉴 목록이 표시되어야 한다', () {
     // Given: QR 코드 스캔 시나리오
     // When: 메뉴 화면 로드
@@ -262,8 +267,11 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
   });
   ```
 
-- [ ] **메뉴 상세 정보 테스트**
+- [x] **메뉴 상세 정보 테스트**
+  - ✅ `mobile_app/test/unit/menu_detail_test.dart` - 메뉴 상세 정보 테스트 작성 완료
+  - ✅ `mobile_app/test/widget/menu_detail_screen_test.dart` - 메뉴 상세 화면 테스트 작성 완료
   ```dart
+  // 작성 완료: test/unit/menu_detail_test.dart
   test('메뉴 선택 시 이미지, 가격, 설명, 알레르기 정보가 표시되어야 한다', () {
     // Given: 메뉴 목록 화면
     // When: 특정 메뉴 선택
@@ -271,8 +279,10 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
   });
   ```
 
-- [ ] **품절 메뉴 처리 테스트**
+- [x] **품절 메뉴 처리 테스트**
+  - ✅ `mobile_app/test/unit/out_of_stock_test.dart` - 품절 메뉴 처리 테스트 작성 완료
   ```dart
+  // 작성 완료: test/unit/out_of_stock_test.dart
   test('품절 메뉴는 비활성화되거나 숨김 처리되어야 한다', () {
     // Given: 품절 상태인 메뉴
     // When: 메뉴판 조회
@@ -280,7 +290,7 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
   });
   ```
 
-- [ ] **관리자 기능 테스트**
+- [ ] **관리자 기능 테스트** (향후 구현 예정)
   ```dart
   test('관리자가 메뉴를 저장하면 즉시 반영되어야 한다', () {
     // Given: 관리자 인증 완료
@@ -303,11 +313,16 @@ RED 단계에서는 **실패하는 테스트를 먼저 작성**합니다. 이는
 
 #### 4. RED 단계 체크리스트
 
-- [ ] 각 기능 요구사항에 대한 테스트 케이스 작성 완료
-- [ ] 모든 테스트가 실패하는 것을 확인
-- [ ] 테스트 코드가 명확하고 읽기 쉬움
-- [ ] 테스트 이름이 요구사항을 명확히 표현
-- [ ] Mock 데이터 및 테스트 환경 준비 완료
+- [x] 각 기능 요구사항에 대한 테스트 케이스 작성 완료
+  - ✅ 고객용 메뉴판 기능 테스트 (3개)
+  - ✅ 위젯 테스트 (2개)
+  - ⏳ 관리자 기능 테스트 (향후 구현)
+- [x] 모든 테스트가 실패하는 것을 확인 (의도적 - 아직 구현 전)
+- [x] 테스트 코드가 명확하고 읽기 쉬움
+- [x] 테스트 이름이 요구사항을 명확히 표현
+- [x] Mock 데이터 및 테스트 환경 준비 완료
+  - ✅ `mobile_app/test/mock_data/menu_mock_data.dart` 준비 완료
+  - ✅ `mobile_app/pubspec.yaml` 테스트 의존성 설정 완료
 
 #### 5. RED 단계의 목표
 
